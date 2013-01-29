@@ -1,0 +1,26 @@
+* Elisp Cookbook
+
+  A bunch of reusable elisp functions.
+
+* Libraries
+
+** cookbook-http
+
+  Provides common functions for retreiving web pages and parsing the
+  results. 
+
+** cookbook-compression
+
+  Provides helper functions for decompressing gzipped content. 
+
+* Development Environment
+  
+** Unit Tests
+   
+   To run the `ert` test suite, first make sure you are in the
+  project's root directory. In other words, `test` should be a
+  subdirectory of cwd. 
+  
+  Then either run `ert` interactively from within emacs, or run
+  `./test/run-tests.sh` from command line
+
