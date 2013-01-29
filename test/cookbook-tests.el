@@ -9,11 +9,29 @@
     (insert-file-contents-literally (expand-file-name filename))
     (buffer-string)))
 
-(ert-deftest decompress-file-test ()
+;; Cookbook Tests
+
+(ert-deftest ckbk/decompress-file-test ()
   (let ((expected (test-resource-file-as-str "test/resources/uncompressed-response.json"))
-        (actual (with-temp-buffer 
-                  (ckbk/decompress-file (expand-file-name "test/resources/response-body.gz")))))
-    (should (equal expected actual))))
+        (buf (find-file-noselect "test/resources/response-body.gz")))
+    (should (equal expected 
+                   (ckbk/decompress-file 
+                    (expand-file-name "test/resources/response-body.gz"))))
+    (should (equal expected (ckbk/decompress-file buf)))))
+
+(ert-deftest ckbk/res-encoding-test ()
+  (should (equal " gzip" (ckbk/get-content-encoding 
+                          (find-file-noselect "test/resources/compressed-response"))))
+  (should (equal "none" (ckbk/get-content-encoding 
+                      (find-file-noselect "test/resources/google-response")))))
+
+(ert-deftest ckbk/res-body-test ()
+  (with-temp-buffer
+    (insert-file-contents-literally (expand-file-name "test/resources/simple-response"))
+    (let ((actual (ckbk/get-response-body)))
+      (should (equal "Simple Response" actual)))))
 
 (provide 'cookbook-tests)
+
+
 

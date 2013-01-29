@@ -1,36 +1,53 @@
-(defun ckbk/get-content-encoding (&optional response-buffer)
+(require 'cookbook-compression)
+(require 'cookbook-buffer)
+
+(defun ckbk/get-content-encoding (&optional buf)
   "Returns value of 'Content-Encoding' Header in response"
-  (let ((mybuf (or response-buffer (current-buffer))))
+  (let ((mybuf (or buf (current-buffer))))
     (with-current-buffer mybuf
       (goto-char (point-min))
-      (search-forward-regexp "Content-Encoding:\\(.*\\)")
-      (match-string 1))))
+      (if (search-forward-regexp "Content-Encoding:\\(.*\\)" nil t)
+          (match-string 1)
+        "none"))))
 
-(defun ckbk/uncompress-response (&optional buf)
-  "Given we're inside a reponse buffer, this will uncompress and
-return the body of the response"
-  (let ((mybuf (or buf (current-buffer))))
-    (save-excursion
-      (with-current-buffer mybuf
-        (let ((filename (make-temp-file "download" nil ".gz")))
-          (search-forward "\n\n")
-          (write-region (point) (point-max) filename)
-          (with-auto-compression-mode
-            (with-temp-buffer
-              (insert-file-contents filename)
-              (buffer-string))))))))
-
-(defun ckbk/get-response-body (&optional response-buffer)
-  (let ((mybuf (or response-buffer (current-buffer)))
-        (content-encoding (ckbk/get-content-encoding mybuf)))
+(defun ckbk/get-response-body (&optional res-buf)
+  "Discard header part of the response."
+  (let ((mybuf (or res-buf (current-buffer))) 
+        (tempfile (make-temp-file "response-body")))
     (with-current-buffer mybuf
-      (cond ((string-match "gzip" content-encoding) (ckbk/uncompress-response))))))
+      (goto-char (point-min))
+      (search-forward "\n\n")
+      (write-region (point) (point-max) tempfile)
+      (ckbk/buffer-as-str tempfile))))
 
-(defun ckbk/uncompress-callback (status)
-  (let ((filename (make-temp-file "download" nil ".gz"))
-        (search-forward "\n\n")               ; Skip response headers.
-        (write-region (point) (point-max) filename)
-        (with-auto-compression-mode
-          (find-file filename)))))
+(defun ckbk/decompress-response-body (&optional buf)
+  "Given we're inside a reponse buffer, this will uncompress and
+return the body of the response."
+  (let ((mybuf (or buf (current-buffer)))
+        (coding-system-for-write 'binary)
+        (coding-system-for-read 'binary)
+        (tempfile (make-temp-file "response-body" nil ".gz")))
+    (with-current-buffer mybuf
+      (setq auto-compression-mode t)
+      (goto-char (point-min))
+      (search-forward "\n\n")
+      (write-region (point) (point-max) tempfile)
+      (ckbk/decompress-file tempfile))))
+
+;; url-retrieve callbacks
+
+(defun ckbk/url-retrieve-body-callback (status)
+  "A callback to url-retrieve that returns body. Body is returned
+decompressed if necessary and returned as a string"
+  (let ((encoding (ckbk/get-content-encoding)))
+    (cond ((string-match "gzip" encoding)
+           (ckbk/decompress-response-body))
+          (t
+           (ckbk/get-response-body)))))
+
+(defun ckbk/url-retrieve-switch-callback (status)
+  "Switch to the buffer returned by `url-retreive'
+    The buffer contains the raw HTTP response sent by the server."
+  (switch-to-buffer (current-buffer)))
 
 (provide 'cookbook-http)

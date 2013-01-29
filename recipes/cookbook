@@ -1,0 +1,8 @@
+(cookbook
+ :version "0.0.1"
+ :files 
+ ("cookbook-buffer.el"
+  "cookbook-compression.el"
+  "cookbook-http.el"
+  "cookbook.el"))
+        

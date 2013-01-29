@@ -18,9 +18,18 @@
 ** Unit Tests
    
    To run the `ert` test suite, first make sure you are in the
-  project's root directory. In other words, `test` should be a
-  subdirectory of cwd. 
+   project's root directory. In other words, `test` should be a
+   subdirectory of cwd. 
   
-  Then either run `ert` interactively from within emacs, or run
-  `./test/run-tests.sh` from command line
+   To run the tests interactively (from within emacs), use: 
+
+#+begin_src elisp
+(ert "ckbk*")
+#+end_src
+  
+   To run them from commandline, use: 
+
+#+begin_src sh
+./test/run-tests.sh
+#+end_src
 
