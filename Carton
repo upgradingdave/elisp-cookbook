@@ -1,7 +1,10 @@
 (source "melpa" "http://melpa.milkbox.net/packages/")
+(source "marmalade" "http://marmalade-repo.org/packages/")
 
 (package "cookbook" "0.0.1" "common elisp functions")
 
+(depends-on "elpakit")
+           
 (development
   (depends-on "ecukes")
   (depends-on "espuds"))

@@ -31,6 +31,10 @@
     (let ((actual (ckbk/get-response-body)))
       (should (equal "Simple Response" actual)))))
 
+(ert-deftest ckkb/query-string-tst ()
+  (should (string= "?a=1&page=1&sort=asc" (ckbk/build-query-string 
+                                           '(("page" . "1") ("sort" . "asc") ("a" . "1"))))))
+
 (provide 'cookbook-tests)
 
 

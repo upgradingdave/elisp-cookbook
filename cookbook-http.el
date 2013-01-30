@@ -1,6 +1,16 @@
 (require 'cookbook-compression)
 (require 'cookbook-buffer)
 
+(defun ckbk/build-query-string (params)
+  "Builds a query string representing PARAMS to be used in a GET
+request. PARAMS is a alist. PARAMS get sorted by key alphabetically."
+  (concat 
+   "?"
+   (mapconcat 
+    (lambda (pair) (concat (car pair) "=" (url-hexify-string (cdr pair))))
+    (sort params (lambda (a b) (string< (car a) (car b))))
+    "&")))
+
 (defun ckbk/get-content-encoding (&optional buf)
   "Returns value of 'Content-Encoding' Header in response"
   (let ((mybuf (or buf (current-buffer))))
